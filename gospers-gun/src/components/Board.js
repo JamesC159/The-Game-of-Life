@@ -159,7 +159,7 @@ class Board extends Component {
 				body: JSON.stringify({
 					field: field,
 					rows: rows,
-					columns, columns,
+					columns: columns,
 					generation: generation
 				}),
 			};
