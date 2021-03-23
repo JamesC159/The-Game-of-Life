@@ -32,9 +32,6 @@ class ConfigureBoard extends Component {
     }
 
     render() {
-        console.log('Configure board render');
-        console.log('configure rows ' + this.state.rows);
-        console.log('configure columns ' + this.state.columns);
         return (
             <form className="form-inline" onSubmit={this.handleConfigureBoard}>
                 <div className="form-group">

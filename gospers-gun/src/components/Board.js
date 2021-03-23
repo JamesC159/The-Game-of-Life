@@ -180,7 +180,6 @@ class Board extends Component {
 			};
 			const res = await fetch('http://localhost:9000/load', req);
 			const jsonRes = await res.json();
-			// console.log(jsonRes);
 			const newState = JSON.parse(jsonRes);
 			const field = newState.field;
 			const rows = newState.rows;
