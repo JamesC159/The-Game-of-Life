@@ -12,6 +12,7 @@ class Board extends Component {
 			field: [],
 			interval: 0,
 			generation: 0,
+			corrupt: false
 		};
 
 		this.genGospers = this.genGospers.bind(this);
@@ -140,9 +141,13 @@ class Board extends Component {
 	 * @param {Number} rows The new number of rows in the field
 	 * @param {Number} columns The new number of columns in the field
 	 */
-	updateBoard(rows, columns) {
-		let field = new2DArray(rows, columns);
-		this.setState({ rows, columns, field, generation: 0 });
+	updateBoard(rows, columns, badInput) {
+		if (badInput) {
+			this.setState({ corrupt: true });
+		} else {
+			let field = new2DArray(rows, columns);
+			this.setState({ rows, columns, field, generation: 0, corrupt: false});
+		}
 		this.pause();
 	}
 
@@ -192,7 +197,7 @@ class Board extends Component {
 	}
 
 	render() {
-		const { field, columns, rows, generation } = this.state;
+		const { field, columns, rows, generation, corrupt } = this.state;
 		
 		return (
 			<div>
@@ -217,6 +222,9 @@ class Board extends Component {
 					</div>
 				</div>
 				<div>
+					{
+						corrupt ? <p className="text-center">Invalid input for Rows/Columns, Try again</p> : null
+					}
 					<Field rows={rows} columns={columns} field={field} />
 					<h3 className="text-center">Generation: {generation}</h3>
 				</div>

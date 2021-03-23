@@ -27,7 +27,16 @@ class ConfigureBoard extends Component {
      * @param {*} event Form event object
      */
     handleConfigureBoard(event) {
-        this.props.updateBoard(this.state.rows, this.state.columns);
+        const { rows, columns } = this.state;
+        let badInput = false;
+
+        if (!parseInt(rows) || !parseInt(columns)) {
+            badInput = true;
+        } else {
+            badInput = false;
+        }
+
+        this.props.updateBoard(rows, columns, badInput);
         event.preventDefault();
     }
 
