@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-
 import Board from './components/Board';
+import Header from './components/Header';
 
 import './App.css';
 
 const App = () => {
 	return (
 		<div>
-			{/* <p>{this.state.apiResponse}</p> */}
+			<Header />
+			<br/>
 			<Board />
 		</div>
 	);

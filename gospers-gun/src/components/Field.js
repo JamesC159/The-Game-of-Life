@@ -15,10 +15,12 @@ class Field extends Component {
 		);
 
 		return (
-			<div
-				className="Field"
-				style={{width: columns * 14}}>
-				{fieldRender}
+			<div className="container-fluid">
+				<div
+					className="Field"
+					style={{width: columns * 14}}>
+					{fieldRender}
+				</div>
 			</div>
 		);
 	}

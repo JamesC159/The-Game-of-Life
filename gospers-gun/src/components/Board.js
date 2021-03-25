@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { new2DArray, wrapAround } from '../utils/arrayUtils';
 import ConfigureBoard from './ConfigureBoard';
+import Controls from './Controls';
 import Field from './Field';
 
 class Board extends Component {
@@ -20,7 +21,8 @@ class Board extends Component {
 		this.play = this.play.bind(this);
 		this.pause = this.pause.bind(this);
 		this.init = this.init.bind(this);
-		this.updateBoard = this.updateBoard.bind(this);
+		this.updateCallback = this.updateCallback.bind(this);
+		this.controlCallback = this.controlCallback.bind(this);
 		this.save = this.save.bind(this);
 		this.load = this.load.bind(this);
 	}
@@ -62,7 +64,7 @@ class Board extends Component {
 			}
 		}
 
-		this.setState({ field });
+		this.setState({ field, generation: 0});
 	}
 
 	/**
@@ -141,7 +143,7 @@ class Board extends Component {
 	 * @param {Number} rows The new number of rows in the field
 	 * @param {Number} columns The new number of columns in the field
 	 */
-	updateBoard(rows, columns, badInput) {
+	updateCallback(rows, columns, badInput) {
 		if (badInput) {
 			this.setState({ corrupt: true });
 		} else {
@@ -149,6 +151,31 @@ class Board extends Component {
 			this.setState({ rows, columns, field, generation: 0, corrupt: false});
 		}
 		this.pause();
+	}
+
+	controlCallback(controlId) {
+		switch (controlId) {
+			case "genGospers":
+				this.genGospers();
+				break;
+			case "play":
+				this.play();
+				break;
+			case "pause":
+				this.pause();
+				break;
+			case "reset":
+				this.init();
+				break;
+			case "save":
+				this.save();
+				break;
+			case "load":
+				this.load();
+				break;
+			default:
+
+		}
 	}
 
 	/**
@@ -201,33 +228,16 @@ class Board extends Component {
 		
 		return (
 			<div>
-				<div className="row">
-					<div className="col-sm-12">
-						<div className="text-center">
-							<div className="btn-group" role="group">
-								<button className="btn btn-secondary" onClick={this.genGospers}>Generate Gosper's Glider Gun</button>
-								<button className="btn btn-secondary" onClick={this.play}>Play</button>
-								<button className="btn btn-secondary" onClick={this.pause}>Pause</button>
-								<button className="btn btn-secondary" onClick={this.init}>Reset</button>
-								<button className="btn btn-success" onClick={this.save}>Save</button>
-								<button className="btn btn-danger" onClick={this.load}>Load</button>
-							</div>
-						</div>
-					</div>
-				</div>
+				<Controls controlCallback={this.controlCallback}></Controls>
 				<br />
-				<div className="row justify-content-center">
-					<div className="col-sm-3">
-						<ConfigureBoard updateBoard={this.updateBoard} />
-					</div>
-				</div>
-				<div>
+				<ConfigureBoard updateCallback={this.updateCallback} />
+				<div className="row">
 					{
 						corrupt ? <p className="text-center">Invalid input for Rows/Columns, Try again</p> : null
 					}
 					<Field rows={rows} columns={columns} field={field} />
-					<h3 className="text-center">Generation: {generation}</h3>
 				</div>
+				<h3 className="text-center">Generation: {generation}</h3>
 			</div>
 		);
 	}

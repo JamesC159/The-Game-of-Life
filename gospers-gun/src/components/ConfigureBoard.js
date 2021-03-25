@@ -23,7 +23,7 @@ class ConfigureBoard extends Component {
     }
 
     /**
-     * Form submitter. Calls Board component updateBoard() callback with new Field rows/columns
+     * Form submitter. Calls Board component updateCallback() callback with new Field rows/columns
      * @param {*} event Form event object
      */
     handleConfigureBoard(event) {
@@ -36,19 +36,25 @@ class ConfigureBoard extends Component {
             badInput = false;
         }
 
-        this.props.updateBoard(rows, columns, badInput);
+        this.props.updateCallback(rows, columns, badInput);
         event.preventDefault();
     }
 
     render() {
         return (
-            <form className="form-inline" onSubmit={this.handleConfigureBoard}>
-                <div className="form-group">
-                    <input type="text" className="form-control" placeholder="Enter Number of Rows"  name="rows" onChange={this.handleChange} />
-                    <input type="text" className="form-control" placeholder="Enter Number of Columns" name="columns" onChange={this.handleChange} />
-                    <button type="submit"  className="btn btn-primary">Submit</button>
+            <div className="container">
+                <div className="row justify-content-center">
+                    <div className="col-6">
+                    <form className="form-inline" onSubmit={this.handleConfigureBoard}>
+                        <div className="form-group">
+                            <input type="text" className="form-control" placeholder="Enter Number of Rows"  name="rows" onChange={this.handleChange} />
+                            <input type="text" className="form-control" placeholder="Enter Number of Columns" name="columns" onChange={this.handleChange} />
+                            <button type="submit"  className="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                    </div>
                 </div>
-            </form>
+            </div>
         );
     }
 }
