@@ -19,7 +19,7 @@ class Field extends Component {
 				<div
 					className="Field"
 					style={{width: columns * 14}}>
-					{fieldRender}
+						{fieldRender}
 				</div>
 			</div>
 		);
