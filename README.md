@@ -1,4 +1,4 @@
-# The Game of Life with Gosper's Glider Gun
+# Conway's Game of Life with Gosper's Glider Gun
 This is a React front-end and Express.js backend API implementation of the Game of Life.
 ## How to install and run
 * Download or clone the repository
