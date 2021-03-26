@@ -13,7 +13,6 @@ class Board extends Component {
 			field: [],
 			interval: 0,
 			generation: 0,
-			corrupt: false
 		};
 
 		this.genGospers = this.genGospers.bind(this);
@@ -144,15 +143,19 @@ class Board extends Component {
 	 * @param {Number} columns The new number of columns in the field
 	 */
 	updateCallback(rows, columns, badInput) {
-		if (badInput) {
-			this.setState({ corrupt: true });
-		} else {
+		// if (badInput) {
+		// 	this.setState({ corrupt: true });
+		// } else {
 			let field = new2DArray(rows, columns);
 			this.setState({ rows, columns, field, generation: 0, corrupt: false});
-		}
+		// }
 		this.pause();
 	}
 
+	/**
+	 * Executes actions from the child Controls component button onClick events.
+	 * @param {string} controlId Button id attribute passed from the child Controls component.
+	 */
 	controlCallback(controlId) {
 		switch (controlId) {
 			case "genGospers":
@@ -174,6 +177,10 @@ class Board extends Component {
 				this.load();
 				break;
 			default:
+				console.log(
+					`Error: Board component failed to execute Controls component action 
+					associated with " + controlId + ". " + controlId + " is not valid`
+				);
 
 		}
 	}
@@ -224,20 +231,16 @@ class Board extends Component {
 	}
 
 	render() {
-		const { field, columns, rows, generation, corrupt } = this.state;
+		const { field, columns, rows, generation } = this.state;
 		
 		return (
 			<div>
 				<Controls controlCallback={this.controlCallback}></Controls>
 				<br />
 				<ConfigureBoard updateCallback={this.updateCallback} />
-				<div className="row">
-					{
-						corrupt ? <p className="text-center">Invalid input for Rows/Columns, Try again</p> : null
-					}
-					<Field rows={rows} columns={columns} field={field} />
-				</div>
-				<h3 className="text-center">Generation: {generation}</h3>
+				<br />
+				<Field rows={rows} columns={columns} field={field} />
+				<h3 className="h3 text-center">Generation: {generation}</h3>
 			</div>
 		);
 	}

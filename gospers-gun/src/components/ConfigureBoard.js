@@ -7,6 +7,7 @@ class ConfigureBoard extends Component {
     this.state = {
         rows: 0,
         columns: 0,
+        invalidInput: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -28,20 +29,22 @@ class ConfigureBoard extends Component {
    */
   handleConfigureBoard(event) {
     const { rows, columns } = this.state;
-    let badInput = false;
 
     if (!parseInt(rows) || !parseInt(columns)) {
-        badInput = true;
+        this.setState({ invalidInput: true });
     } else {
-        badInput = false;
+        this.setState({ invalidInput: false });
+        this.props.updateCallback(rows, columns);
     }
 
-    this.props.updateCallback(rows, columns, badInput);
     event.preventDefault();
   }
 
   render() {
+    const { invalidInput } = this.state;
+
     return (
+      <div>
         <div className="container">
             <div className="row justify-content-center">
                 <div className="col-6">
@@ -55,6 +58,17 @@ class ConfigureBoard extends Component {
                 </div>
             </div>
         </div>
+        <br />
+        <div class="container-fluid">
+          <div className="row justify-content-center">
+            <div className="col-6">
+              {
+                invalidInput ? <p className="fw-bold text-danger text-center">Invalid input for Rows/Columns, Try again</p> : null
+              }
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 }
