@@ -9,11 +9,11 @@ class Controls extends Component {
   }
 
 	/**
-	 * Button event handler. Passes the button id attribute to the parent component controlCallback() callback.
+	 * Button event handler. Passes the button id attribute to the parent component handleControls() callback.
 	 * @param {*} event The button onClick event object
 	 */
   handleControl(event) {
-  	this.props.controlCallback(event.target.id);
+  	this.props.handleControls(event.target.id);
   }
 
   render() {

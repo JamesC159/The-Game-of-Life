@@ -20,8 +20,8 @@ class Board extends Component {
 		this.play = this.play.bind(this);
 		this.pause = this.pause.bind(this);
 		this.init = this.init.bind(this);
-		this.updateCallback = this.updateCallback.bind(this);
-		this.controlCallback = this.controlCallback.bind(this);
+		this.handleUpdate = this.handleUpdate.bind(this);
+		this.handleControls = this.handleControls.bind(this);
 		this.save = this.save.bind(this);
 		this.load = this.load.bind(this);
 	}
@@ -37,12 +37,7 @@ class Board extends Component {
 	 * Generates Gosper's glider gun
 	 */
 	genGospers() {
-		const { field } = this.state;
-
-		//Calculate the midpoint of row/col
-		let i = Math.round((field.length - 1) / 2);
-		let j = field[0] ? Math.round((field[0].length - 1) / 2) : 1;
-
+		const { field, columns, rows } = this.state;
 		const gun = 
 		[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
@@ -54,12 +49,17 @@ class Board extends Component {
 		[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
 
-		//Offset from i, j where we begin and end inserting the static Cell into the field
-		let colWidth = Math.round((gun.length - 1) / 2);
-		let rowHeight = Math.round((gun[0].length - 1) / 2);
-		for (let k = i - colWidth - 1, q = 0; k < i + colWidth; k++, q++) {
-			for (let l = j - rowHeight - 1, p = 0; l < j + rowHeight - 1; l++, p++) {
-				field[k][l] = gun[q][p];
+		//Calculate the midpoint of row/col
+		const midCols = Math.round((columns - 1) / 2);
+		const midRows = Math.round((rows - 1) / 2);
+
+		//Offset to where we begin and end inserting Gosper's Glider Gun into the field
+		const midGunRows = Math.round((gun.length - 1) / 2);
+		const midGunCols = Math.round((gun[0].length - 1) / 2);
+
+		for (let i = midRows - midGunRows, q = 0; i < midRows + midGunRows + 1; i++, q++) {
+			for (let j = midCols - midGunCols, p = 0; j < midCols + midGunCols; j++, p++) {
+				field[i][j] = gun[q][p];
 			}
 		}
 
@@ -142,7 +142,7 @@ class Board extends Component {
 	 * @param {Number} rows The new number of rows in the field
 	 * @param {Number} columns The new number of columns in the field
 	 */
-	updateCallback(rows, columns, badInput) {
+	handleUpdate(rows, columns, badInput) {
 		// if (badInput) {
 		// 	this.setState({ corrupt: true });
 		// } else {
@@ -156,7 +156,7 @@ class Board extends Component {
 	 * Executes actions from the child Controls component button onClick events.
 	 * @param {string} controlId Button id attribute passed from the child Controls component.
 	 */
-	controlCallback(controlId) {
+	handleControls(controlId) {
 		switch (controlId) {
 			case "genGospers":
 				this.genGospers();
@@ -235,9 +235,9 @@ class Board extends Component {
 		
 		return (
 			<div>
-				<Controls controlCallback={this.controlCallback}></Controls>
+				<Controls handleControls={this.handleControls}></Controls>
 				<br />
-				<ConfigureBoard updateCallback={this.updateCallback} />
+				<ConfigureBoard handleUpdate={this.handleUpdate} />
 				<br />
 				<Field rows={rows} columns={columns} field={field} />
 				<h3 className="h3 text-center">Generation: {generation}</h3>

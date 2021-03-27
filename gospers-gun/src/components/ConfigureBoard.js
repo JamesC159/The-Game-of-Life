@@ -24,7 +24,7 @@ class ConfigureBoard extends Component {
   }
 
   /**
-   * Form submitter. Calls Board component updateCallback() callback with new Field rows/columns
+   * Form submitter. Calls Board component handleUpdate() callback with new Field rows/columns
    * @param {*} event Form event object
    */
   handleConfigureBoard(event) {
@@ -34,7 +34,7 @@ class ConfigureBoard extends Component {
         this.setState({ invalidInput: true });
     } else {
         this.setState({ invalidInput: false });
-        this.props.updateCallback(rows, columns);
+        this.props.handleUpdate(rows, columns);
     }
 
     event.preventDefault();
@@ -42,6 +42,19 @@ class ConfigureBoard extends Component {
 
   render() {
     const { invalidInput } = this.state;
+
+    const invalidHTML = (
+      <div>
+        <br />
+        <div class="container-fluid">
+          <div className="row justify-content-center">
+            <div className="col-6">
+              <p className="fw-bold text-danger text-center">Invalid input for Rows/Columns. Must be at least 100x100. Try again</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
 
     return (
       <div>
@@ -58,16 +71,9 @@ class ConfigureBoard extends Component {
                 </div>
             </div>
         </div>
-        <br />
-        <div class="container-fluid">
-          <div className="row justify-content-center">
-            <div className="col-6">
-              {
-                invalidInput ? <p className="fw-bold text-danger text-center">Invalid input for Rows/Columns, Try again</p> : null
-              }
-            </div>
-          </div>
-        </div>
+        {
+          invalidInput ? invalidHTML : null
+        }
       </div>
     );
   }
