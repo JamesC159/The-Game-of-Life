@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { new2DArray, wrapAround } from '../utils/arrayUtils';
+import Cell from '../lib/Cell';
+import { newField, wrapAround } from '../utils/fieldTools';
 import ConfigureBoard from './ConfigureBoard';
 import Controls from './Controls';
 import Field from './Field';
@@ -17,6 +18,8 @@ class Board extends Component {
 
 		this.genGospers = this.genGospers.bind(this);
 		this.nextGen = this.nextGen.bind(this);
+		this.getNeighbors = this.getNeighbors.bind(this);
+		this.setNeighbors = this.setNeighbors.bind(this);
 		this.play = this.play.bind(this);
 		this.pause = this.pause.bind(this);
 		this.init = this.init.bind(this);
@@ -39,15 +42,15 @@ class Board extends Component {
 	genGospers() {
 		const { field, columns, rows } = this.state;
 		const gun = 
-		[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-		[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
-		[1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[1,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-		[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+			[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+			[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
+			[1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[1,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
 
 		//Calculate the midpoint of row/col
 		const midCols = Math.round((columns - 1) / 2);
@@ -59,56 +62,97 @@ class Board extends Component {
 
 		for (let i = midRows - midGunRows, q = 0; i < midRows + midGunRows + 1; i++, q++) {
 			for (let j = midCols - midGunCols, p = 0; j < midCols + midGunCols; j++, p++) {
-				field[i][j] = gun[q][p];
+				field[i][j] = new Cell(gun[q][p]);
 			}
 		}
 
-		this.setState({ field, generation: 0});
+		this.setState({ field, generation: 0}, () => {
+			// Update the neighbors
+			this.setState({ field: this.setNeighbors(field) });
+		});
 	}
 
 	/**
-	 * Generates the next generation of the Cells
+	 * Generates the next generation of the Cells.
 	 */
 	nextGen() {
 		const { field, columns, rows, generation } = this.state;
-		const nextField = [];
 
-		// Build the new field
-		for (var i = 0; i < columns; i++) {
-			const newRow = [];
+		//Performance enhancement over row arrays.
+		//First prepare each Cell's nextState
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < columns; j++) {
+				let sum = 0;
 
-			for (var j = 0; j < rows; j++) {
-				//Calculate the wrap around values for toroidal behavior
-				const left = wrapAround(j - 1, rows);
-				const right = wrapAround(j + 1, rows);
-				const up = wrapAround(i - 1, columns);
-				const down = wrapAround(i + 1, columns);
+				//Count alive neighbors
+				for (let neighbor of field[i][j].neighbors) {
+					if (neighbor.alive && neighbor !== field[i][j]) {
+						sum++;
+					}
+				}
 
-				//Count number of alive cells in current cell's region.
-				const ctr = 
-					Number(field[up][left]) +
-					Number(field[up][j]) +
-					Number(field[up][right]) +
-					Number(field[i][left]) +
-					Number(field[i][right]) +
-					Number(field[down][left]) +
-					Number(field[down][j]) +
-					Number(field[down][right]);
-				
-				//Calculate if current cell is alive or dead
-				field[i][j] === 1
-				? ctr > 1 && ctr <= 3
-					? newRow.push(1)
-					: newRow.push(0)
-				: ctr === 3
-					? newRow.push(1)
-					: newRow.push(0);
+				//Set nextState according to the rules of the game
+				field[i][j].alive === 1
+				? sum > 1 && sum <= 3
+					? field[i][j].nextState = 1
+					: field[i][j].nextState = 0
+				: sum === 3
+					? field[i][j].nextState = 1
+					: field[i][j].nextState = 0;
 			}
-
-			nextField.push(newRow);
 		}
 
-		this.setState({ field: nextField, generation: generation + 1});
+		//Advance and update Cells once next states have been computed
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < columns; j++) {
+				field[i][j].update();
+			}
+		}
+
+		//This is the biggest performance hit for the algorithm.
+		//During a 30 second performance analysis, the setState() call took 4814.8 total time. 
+		//Clearly React doesn't like big arrays in setState()
+		this.setState({ field, generation: generation + 1});
+	}
+
+	/**
+	 * Gets the neighbors of a Cell in the field.
+	 * @param {number} row The row location of the Cell
+	 * @param {number} column The column location of the Cell
+	 * @returns an array of neighbors of the Cell at row/column
+	 */
+	getNeighbors(row, column) {
+		const { rows, columns, field } = this.state;
+		let neighbors = [];
+
+		for (let i = row - 1; i <= row + 1; i++) {
+			for (let j = column - 1; j <= column + 1; j++) {
+				const wrappedI = wrapAround(i, rows);
+				const wrappedJ = wrapAround(j, columns);
+
+				if (i === row && j === column) continue;
+				neighbors.push(field[wrappedI][wrappedJ]);
+			}
+		}
+
+		return neighbors;
+	}
+
+	/**
+	 * Sets the neighbors for each Cell in the field
+	 * @param {[]} field The game field
+	 * @returns Updated field with each Cell's neighbors set
+	 */
+	setNeighbors(field) {
+		const { rows, columns } = this.state;
+
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < columns; j++) {
+				field[i][j].neighbors = this.getNeighbors(i, j);
+			}
+		}
+
+		return field;
 	}
 
 	/**
@@ -132,8 +176,19 @@ class Board extends Component {
 	 */
 	init() {
 		const { columns, rows } = this.state;
-		let field = new2DArray(rows, columns);
-		this.setState({ field, generation: 0 });
+
+		//Set the field state and then set each Cell's neighbors
+		//This was a performance enhancment. Rather than brute forcing row arrays
+		//and pushing each row array to the field. We calculate neighbors first and
+		//use them to prevent us from having to do this new array allocation and deallocation
+		//each time we want to build a new row. The self execution time difference between 
+		//doing things this way and the brute force approach is during a 30 second performance
+		//analysis of both was 36.3 ms.
+		let field = newField(rows, columns);
+		this.setState({ field, generation: 0 }, () => {
+			this.setState({ field:  this.setNeighbors(field) });
+		});
+		
 		this.pause();
 	}
 	
@@ -143,12 +198,8 @@ class Board extends Component {
 	 * @param {Number} columns The new number of columns in the field
 	 */
 	handleUpdate(rows, columns, badInput) {
-		// if (badInput) {
-		// 	this.setState({ corrupt: true });
-		// } else {
-			let field = new2DArray(rows, columns);
-			this.setState({ rows, columns, field, generation: 0, corrupt: false});
-		// }
+		let field = newField(rows, columns);
+		this.setState({ rows, columns, field, generation: 0, corrupt: false});
 		this.pause();
 	}
 

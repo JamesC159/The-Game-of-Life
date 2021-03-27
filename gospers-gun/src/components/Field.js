@@ -6,10 +6,10 @@ class Field extends Component {
 	render() {
 		const { field, rows } = this.props;
 
+		//Flatten and map .Cell styled divs to each Cell
 		const flatField = field.flat();
-
 		const fieldRender = flatField.map((item, index) => {
-			return <div className={`Cell ${flatField[index] ? 'isActive' : ''}`} />
+			return <div className={`Cell ${flatField[index].alive ? 'isActive' : ''}`} />
 		});
 
 		return (

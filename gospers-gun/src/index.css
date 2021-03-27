@@ -11,6 +11,11 @@ body {
 
 .Cell {
 	display: inline-block;
+	/*
+		Without drawing border lines, we get a significant, almost double, performance improvement.
+		But in order to demonstrate the size of the board changing for demo purposes,
+		I leave the border turned on.
+	 */
 	border: 1px solid grey;
 }
 
