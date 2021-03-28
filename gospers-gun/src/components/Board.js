@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Cell from '../lib/Cell';
-import { newField, wrapAround } from '../utils/fieldTools';
+import { getFieldState, newField, wrapAround } from '../utils/fieldTools';
 import ConfigureBoard from './ConfigureBoard';
 import Controls from './Controls';
 import Field from './Field';
@@ -60,16 +60,14 @@ class Board extends Component {
 		const midGunRows = Math.round((gun.length - 1) / 2);
 		const midGunCols = Math.round((gun[0].length - 1) / 2);
 
-		for (let i = midRows - midGunRows, q = 0; i < midRows + midGunRows + 1; i++, q++) {
-			for (let j = midCols - midGunCols, p = 0; j < midCols + midGunCols; j++, p++) {
+		for (let i = midRows - midGunRows - 1, q = 0; i < midRows + midGunRows; i++, q++) {
+			for (let j = midCols - midGunCols - 1, p = 0; j < midCols + midGunCols - 1; j++, p++) {
 				field[i][j] = new Cell(gun[q][p]);
 			}
 		}
 
-		this.setState({ field, generation: 0}, () => {
-			// Update the neighbors
-			this.setState({ field: this.setNeighbors(field) });
-		});
+		const newField = this.setNeighbors(field);
+		this.setState({ field: newField, generation: 0 });
 	}
 
 	/**
@@ -112,17 +110,18 @@ class Board extends Component {
 		//This is the biggest performance hit for the algorithm.
 		//During a 30 second performance analysis, the setState() call took 4814.8 total time. 
 		//Clearly React doesn't like big arrays in setState()
-		this.setState({ field, generation: generation + 1});
+		this.setState({ field, generation: generation + 1 });
 	}
 
 	/**
 	 * Gets the neighbors of a Cell in the field.
 	 * @param {number} row The row location of the Cell
 	 * @param {number} column The column location of the Cell
+	 * @param {[]} field The game field
 	 * @returns an array of neighbors of the Cell at row/column
 	 */
-	getNeighbors(row, column) {
-		const { rows, columns, field } = this.state;
+	getNeighbors(row, column, field) {
+		const { rows, columns } = this.state;
 		let neighbors = [];
 
 		for (let i = row - 1; i <= row + 1; i++) {
@@ -148,7 +147,7 @@ class Board extends Component {
 
 		for (let i = 0; i < rows; i++) {
 			for (let j = 0; j < columns; j++) {
-				field[i][j].neighbors = this.getNeighbors(i, j);
+				field[i][j].neighbors = this.getNeighbors(i, j, field);
 			}
 		}
 
@@ -156,7 +155,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Starts the Game of Life
+	 * Starts the game
 	 */
 	play() {
 		clearInterval(this.state.interval);
@@ -165,7 +164,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Pauses the Game of Life
+	 * Pauses the game
 	 */
 	pause() {
 		clearInterval(this.state.interval);
@@ -185,9 +184,8 @@ class Board extends Component {
 		//doing things this way and the brute force approach is during a 30 second performance
 		//analysis of both was 36.3 ms.
 		let field = newField(rows, columns);
-		this.setState({ field, generation: 0 }, () => {
-			this.setState({ field:  this.setNeighbors(field) });
-		});
+		field = this.setNeighbors(field);
+		this.setState({ field, generation: 0 });
 		
 		this.pause();
 	}
@@ -197,9 +195,10 @@ class Board extends Component {
 	 * @param {Number} rows The new number of rows in the field
 	 * @param {Number} columns The new number of columns in the field
 	 */
-	handleUpdate(rows, columns, badInput) {
+	handleUpdate(rows, columns) {
 		let field = newField(rows, columns);
-		this.setState({ rows, columns, field, generation: 0, corrupt: false});
+		field = this.setNeighbors(field);
+		this.setState({ rows, columns, field, generation: 0 });
 		this.pause();
 	}
 
@@ -241,13 +240,13 @@ class Board extends Component {
 	 */
 	async save() {
 		const { field, rows, columns, generation } = this.state;
-
+		const saveField = getFieldState(rows, columns, field);
 		try {
 			const req = {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					field: field,
+					field: saveField,
 					rows: rows,
 					columns: columns,
 					generation: generation
@@ -271,11 +270,12 @@ class Board extends Component {
 			const res = await fetch('http://localhost:9000/load', req);
 			const jsonRes = await res.json();
 			const newState = JSON.parse(jsonRes);
-			const field = newState.field;
-			const rows = newState.rows;
-			const columns = newState.rows;
+			const newRows = newState.rows;
+			const newColumns = newState.rows;
+			let field = newField(newRows, newColumns, newState.field);
+			field = this.setNeighbors(field);
 			const generation = newState.generation;
-			this.setState({ rows, columns, field, generation });
+			this.setState({ rows: newRows, columns: newColumns, field, generation });
 		} catch (err) {
 			console.log(err);
 		}

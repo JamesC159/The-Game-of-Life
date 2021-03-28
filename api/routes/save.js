@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 
-router.post('/', function(req, res, next) {
+router.post('/', (req, res, next) => {
     const writeStream = fs.createWriteStream('board-state.json', {flag: 'w'});
 
     writeStream.write(JSON.stringify(req.body));
