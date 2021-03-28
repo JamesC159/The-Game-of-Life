@@ -41,7 +41,7 @@ class Board extends Component {
 	 */
 	genGospers() {
 		const { field, columns, rows } = this.state;
-		const gun = 
+		const gun =
 			[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
 			[0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1],
@@ -81,22 +81,23 @@ class Board extends Component {
 		for (let i = 0; i < rows; i++) {
 			for (let j = 0; j < columns; j++) {
 				let sum = 0;
+				const cell = field[i][j];
 
 				//Count alive neighbors
-				for (let neighbor of field[i][j].neighbors) {
-					if (neighbor.alive && neighbor !== field[i][j]) {
+				for (let neighbor of cell.neighbors) {
+					if (neighbor.alive && neighbor !== cell) {
 						sum++;
 					}
 				}
 
 				//Set nextState according to the rules of the game
-				field[i][j].alive === 1
+				cell.alive === 1
 				? sum > 1 && sum <= 3
-					? field[i][j].nextState = 1
-					: field[i][j].nextState = 0
+					? cell.nextState = 1
+					: cell.nextState = 0
 				: sum === 3
-					? field[i][j].nextState = 1
-					: field[i][j].nextState = 0;
+					? cell.nextState = 1
+					: cell.nextState = 0;
 			}
 		}
 
@@ -108,7 +109,7 @@ class Board extends Component {
 		}
 
 		//This is the biggest performance hit for the algorithm.
-		//During a 30 second performance analysis, the setState() call took 4814.8 total time. 
+		//During a 30 second performance analysis, the setState() call took 4814.8 total time.
 		//Clearly React doesn't like big arrays in setState()
 		this.setState({ field, generation: generation + 1 });
 	}
@@ -180,16 +181,16 @@ class Board extends Component {
 		//This was a performance enhancment. Rather than brute forcing row arrays
 		//and pushing each row array to the field. We calculate neighbors first and
 		//use them to prevent us from having to do this new array allocation and deallocation
-		//each time we want to build a new row. The self execution time difference between 
+		//each time we want to build a new row. The self execution time difference between
 		//doing things this way and the brute force approach is during a 30 second performance
 		//analysis of both was 36.3 ms.
 		let field = newField(rows, columns);
 		field = this.setNeighbors(field);
 		this.setState({ field, generation: 0 });
-		
+
 		this.pause();
 	}
-	
+
 	/**
 	 * Child component callback to create a new field
 	 * @param {Number} rows The new number of rows in the field
@@ -197,8 +198,9 @@ class Board extends Component {
 	 */
 	handleUpdate(rows, columns) {
 		let field = newField(rows, columns);
-		field = this.setNeighbors(field);
-		this.setState({ rows, columns, field, generation: 0 });
+		this.setState({ rows, columns, generation: 0 }, () => {
+			this.setState({ field: this.setNeighbors(field) })
+		});
 		this.pause();
 	}
 
@@ -228,7 +230,7 @@ class Board extends Component {
 				break;
 			default:
 				console.log(
-					`Error: Board component failed to execute Controls component action 
+					`Error: Board component failed to execute Controls component action
 					associated with " + controlId + ". " + controlId + " is not valid`
 				);
 
@@ -272,25 +274,26 @@ class Board extends Component {
 			const newState = JSON.parse(jsonRes);
 			const newRows = newState.rows;
 			const newColumns = newState.rows;
-			let field = newField(newRows, newColumns, newState.field);
-			field = this.setNeighbors(field);
 			const generation = newState.generation;
-			this.setState({ rows: newRows, columns: newColumns, field, generation });
+			let field = newField(newRows, newColumns, newState.field);
+			this.setState({ rows: newRows, columns: newColumns, generation }, () =>{
+				this.setState({ field: this.setNeighbors(field) });
+			});
 		} catch (err) {
 			console.log(err);
 		}
 	}
 
 	render() {
-		const { field, columns, rows, generation } = this.state;
-		
+		const { field, columns, generation } = this.state;
+
 		return (
 			<div>
 				<Controls handleControls={this.handleControls}></Controls>
 				<br />
 				<ConfigureBoard handleUpdate={this.handleUpdate} />
 				<br />
-				<Field rows={rows} columns={columns} field={field} />
+				<Field columns={columns} field={field} />
 				<h3 className="h3 text-center">Generation: {generation}</h3>
 			</div>
 		);

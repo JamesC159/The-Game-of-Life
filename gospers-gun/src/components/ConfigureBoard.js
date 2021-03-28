@@ -19,8 +19,8 @@ class ConfigureBoard extends Component {
    * @param {*} event Input event object
    */
   handleChange(event) {
-    this.setState({ [event.target.name]: event.target.value });
     event.preventDefault();
+    this.setState({ [event.target.name]: event.target.value });
   }
 
   /**
@@ -30,14 +30,13 @@ class ConfigureBoard extends Component {
   handleConfigureBoard(event) {
     const { rows, columns } = this.state;
 
+    event.preventDefault();
     if (!parseInt(rows) || !parseInt(columns)) {
         this.setState({ invalidInput: true });
     } else {
         this.setState({ invalidInput: false });
         this.props.handleUpdate(rows, columns);
     }
-
-    event.preventDefault();
   }
 
   render() {

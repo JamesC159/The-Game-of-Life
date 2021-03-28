@@ -18,7 +18,6 @@ router.post('/', (req, res, next) => {
     });
 
     writeStream.end();
-    res.end();
 });
 
 module.exports = router;

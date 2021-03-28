@@ -4,13 +4,15 @@ import Cell from "../lib/Cell";
  * Generates a new 2D array filled with Cells
  * @param {Number} rows Number of rows of the new 2D array
  * @param {Number} columns Number of columns of the new 2D array
+ * @param {Number} oldFieldState The dead/alive state of a previous game field
+ * @returns New game field with cells initialized to dead, or a previous field state
  */
-export const newField = (rows, columns, oldField = null) => {
+export const newField = (rows, columns, oldFieldState = null) => {
   let arr = [];
   for (let i = 0; i < rows; i++) {
     let row = [];
     for (let j = 0; j < columns; j++) {
-      oldField ? row.push(new Cell(oldField[i][j])) : row.push(new Cell(0));
+      oldFieldState ? row.push(new Cell(oldFieldState[i][j])) : row.push(new Cell(0));
     }
     arr.push(row);
   }
