@@ -25,6 +25,7 @@ class Board extends Component {
 		this.init = this.init.bind(this);
 		this.handleUpdate = this.handleUpdate.bind(this);
 		this.handleControls = this.handleControls.bind(this);
+		this.drawCells = this.drawCells.bind(this);
 		this.save = this.save.bind(this);
 		this.load = this.load.bind(this);
 	}
@@ -37,7 +38,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Generates Gosper's glider gun
+	 * Controls component callback. Generates Gosper's glider gun
 	 */
 	genGospers() {
 		const { field, columns, rows } = this.state;
@@ -66,7 +67,7 @@ class Board extends Component {
 			}
 		}
 
-		const newField = this.setNeighbors(field);
+		const newField = this.setNeighbors(field, rows, columns);
 		this.setState({ field: newField, generation: 0 });
 	}
 
@@ -121,8 +122,7 @@ class Board extends Component {
 	 * @param {[]} field The game field
 	 * @returns an array of neighbors of the Cell at row/column
 	 */
-	getNeighbors(row, column, field) {
-		const { rows, columns } = this.state;
+	getNeighbors(rows, columns, row, column, field) {
 		let neighbors = [];
 
 		for (let i = row - 1; i <= row + 1; i++) {
@@ -143,12 +143,10 @@ class Board extends Component {
 	 * @param {[]} field The game field
 	 * @returns Updated field with each Cell's neighbors set
 	 */
-	setNeighbors(field) {
-		const { rows, columns } = this.state;
-
+	setNeighbors(field, rows, columns) {
 		for (let i = 0; i < rows; i++) {
 			for (let j = 0; j < columns; j++) {
-				field[i][j].neighbors = this.getNeighbors(i, j, field);
+				field[i][j].neighbors = this.getNeighbors(rows, columns, i, j, field);
 			}
 		}
 
@@ -156,7 +154,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Starts the game
+	 * Controls component callback. Starts the game
 	 */
 	play() {
 		clearInterval(this.state.interval);
@@ -165,7 +163,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Pauses the game
+	 * Controls component callback. Pauses the game
 	 */
 	pause() {
 		clearInterval(this.state.interval);
@@ -185,23 +183,41 @@ class Board extends Component {
 		//doing things this way and the brute force approach is during a 30 second performance
 		//analysis of both was 36.3 ms.
 		let field = newField(rows, columns);
-		field = this.setNeighbors(field);
+		field = this.setNeighbors(field, rows, columns);
 		this.setState({ field, generation: 0 });
 
 		this.pause();
 	}
 
 	/**
-	 * Child component callback to create a new field
+	 * ConfigureBoard component callback to create a new field
 	 * @param {Number} rows The new number of rows in the field
 	 * @param {Number} columns The new number of columns in the field
 	 */
 	handleUpdate(rows, columns) {
 		let field = newField(rows, columns);
-		this.setState({ rows, columns, generation: 0 }, () => {
-			this.setState({ field: this.setNeighbors(field) })
-		});
+		field = this.setNeighbors(field, rows, columns)
+		this.setState({ rows, columns, generation: 0, field });
 		this.pause();
+	}
+
+	/**
+	 * Field component callback. Draws Cells onto the field cavas.
+	 * @param {*} canvasCtx The game field HTML canvas context
+	 */
+	drawCells(canvasCtx) {
+		const { rows, columns, field } = this.state;
+
+		canvasCtx.clearRect(0, 0, rows, columns);
+		canvasCtx.fillStyle = 'cyan';
+
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < columns; j++) {
+				if (field[i][j] && field[i][j].alive === 1) {
+					canvasCtx.fillRect(j, i, 1, 1);
+				}
+			}
+		}
 	}
 
 	/**
@@ -238,7 +254,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Saves the state of the Board component
+	 * Controls component callback. Saves the state of the Board component
 	 */
 	async save() {
 		const { field, rows, columns, generation } = this.state;
@@ -261,7 +277,7 @@ class Board extends Component {
 	}
 
 	/**
-	 * Fetches the stored state of the Board component and sets it's state.
+	 * Controls component callback. Fetches the stored state of the Board component and sets it's state.
 	 */
 	async load() {
 		try {
@@ -276,16 +292,15 @@ class Board extends Component {
 			const newColumns = newState.rows;
 			const generation = newState.generation;
 			let field = newField(newRows, newColumns, newState.field);
-			this.setState({ rows: newRows, columns: newColumns, generation }, () =>{
-				this.setState({ field: this.setNeighbors(field) });
-			});
+			field = this.setNeighbors(field, newRows, newColumns);
+			this.setState({ rows: newRows, columns: newColumns, field, generation });
 		} catch (err) {
 			console.log(err);
 		}
 	}
 
 	render() {
-		const { field, columns, generation } = this.state;
+		const { rows, columns, generation } = this.state;
 
 		return (
 			<div>
@@ -293,7 +308,7 @@ class Board extends Component {
 				<br />
 				<ConfigureBoard handleUpdate={this.handleUpdate} />
 				<br />
-				<Field columns={columns} field={field} />
+				<Field rows={rows} columns={columns} drawCells={this.drawCells} />
 				<h3 className="h3 text-center">Generation: {generation}</h3>
 			</div>
 		);

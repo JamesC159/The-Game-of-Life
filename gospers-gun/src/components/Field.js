@@ -1,21 +1,28 @@
 
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 
 class Field extends Component {
-	render() {
-		const { field, columns } = this.props;
+	constructor(props) {
+		super(props);
 
-		//Flatten and map .Cell styled divs to each Cell
-		const flatField = field.flat();
-		const fieldRender = flatField.map((item, index) => {
-			return <div className={`Cell ${flatField[index].alive ? 'isActive' : ''}`} key={index} />
-		});
+		this.canvasRef = createRef();
+	}
+
+	componentDidMount() {
+		const canvas = this.canvasRef.current;
+		this.canvasCtx = canvas.getContext('2d');
+	}
+
+	componentDidUpdate() {
+		this.props.drawCells(this.canvasCtx);
+	}
+
+	render() {
+		const { rows, columns } = this.props;
 
 		return (
-			<div className="container-fluid">
-				<div className="Field" style={{ 'grid-template-columns': `repeat(${ columns }, 1fr)` }}>
-						{ fieldRender }
-				</div>
+			<div className="container-fluid text-center">
+				<canvas ref={this.canvasRef} id="myCanvas" width={columns} height={rows} style={{ 'border': '1px solid black', 'width': columns * 5, 'height': rows * 5 }} />
 			</div>
 		);
 	}
