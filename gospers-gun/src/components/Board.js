@@ -208,7 +208,7 @@ class Board extends Component {
 	drawCells(canvasCtx) {
 		const { rows, columns, field } = this.state;
 
-		canvasCtx.clearRect(0, 0, rows * 2, columns * 2);
+		canvasCtx.clearRect(0, 0, rows * rows, columns * columns);
 		canvasCtx.fillStyle = 'cyan';
 
 		for (let i = 0; i < rows; i++) {
