@@ -4,7 +4,6 @@ import React, { Component, createRef } from 'react';
 class Field extends Component {
 	constructor(props) {
 		super(props);
-
 		this.canvasRef = createRef();
 	}
 
@@ -22,7 +21,11 @@ class Field extends Component {
 
 		return (
 			<div className="container-fluid text-center">
-				<canvas ref={this.canvasRef} id="myCanvas" width={columns} height={rows} style={{ 'border': '1px solid black', 'width': columns * 5, 'height': rows * 5 }} />
+				<canvas
+				ref={this.canvasRef}
+				id="myCanvas" width={columns}
+				height={rows}
+				style={{ 'border': '1px solid black', 'width': columns * 5, 'height': rows * 5 }} />
 			</div>
 		);
 	}

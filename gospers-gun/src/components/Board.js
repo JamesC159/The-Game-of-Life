@@ -68,7 +68,7 @@ class Board extends Component {
 		}
 
 		const newField = this.setNeighbors(field, rows, columns);
-		this.setState({ field: newField, generation: 0 });
+		this.setState({ field: newField, generation: 0, rows, columns });
 	}
 
 	/**
@@ -196,7 +196,7 @@ class Board extends Component {
 	 */
 	handleUpdate(rows, columns) {
 		let field = newField(rows, columns);
-		field = this.setNeighbors(field, rows, columns)
+		field = this.setNeighbors(field, rows, columns);
 		this.setState({ rows, columns, generation: 0, field });
 		this.pause();
 	}
@@ -300,7 +300,7 @@ class Board extends Component {
 	}
 
 	render() {
-		const { rows, columns, generation } = this.state;
+		const { rows, columns, generation, field } = this.state;
 
 		return (
 			<div>
@@ -308,7 +308,7 @@ class Board extends Component {
 				<br />
 				<ConfigureBoard handleUpdate={this.handleUpdate} />
 				<br />
-				<Field rows={rows} columns={columns} drawCells={this.drawCells} />
+				<Field rows={rows} columns={columns} field={field} drawCells={this.drawCells} />
 				<h3 className="h3 text-center">Generation: {generation}</h3>
 			</div>
 		);
