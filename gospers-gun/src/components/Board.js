@@ -208,7 +208,7 @@ class Board extends Component {
 	drawCells(canvasCtx) {
 		const { rows, columns, field } = this.state;
 
-		canvasCtx.clearRect(0, 0, rows, columns);
+		canvasCtx.clearRect(0, 0, rows * 2, columns * 2);
 		canvasCtx.fillStyle = 'cyan';
 
 		for (let i = 0; i < rows; i++) {
@@ -308,7 +308,7 @@ class Board extends Component {
 				<br />
 				<ConfigureBoard handleUpdate={this.handleUpdate} />
 				<br />
-				<Field rows={rows} columns={columns} field={field} drawCells={this.drawCells} />
+				<Field rows={rows} columns={columns} drawCells={this.drawCells} />
 				<h3 className="h3 text-center">Generation: {generation}</h3>
 			</div>
 		);

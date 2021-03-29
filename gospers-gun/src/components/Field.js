@@ -8,6 +8,7 @@ class Field extends Component {
 	}
 
 	componentDidMount() {
+		// The canvas is an enchancement over divs. it is much faster
 		const canvas = this.canvasRef.current;
 		this.canvasCtx = canvas.getContext('2d');
 	}
